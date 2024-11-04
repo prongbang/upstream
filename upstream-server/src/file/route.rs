@@ -2,15 +2,11 @@ use actix_web::{get, HttpResponse, Responder};
 use serde::Serialize;
 use std::{env, fs};
 use std::io;
+use crate::file::get_current_working_directory;
 
 #[derive(Serialize)]
 struct FileListResponse {
     files: Vec<String>,
-}
-
-fn get_current_working_directory() -> io::Result<String> {
-    let path = env::current_dir()?;
-    Ok(path.display().to_string())
 }
 
 fn list_files_in_directory(directory: &str) -> io::Result<Vec<String>> {
