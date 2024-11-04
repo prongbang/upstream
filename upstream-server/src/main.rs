@@ -1,5 +1,6 @@
 mod stream;
 mod ip;
+mod file;
 
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use actix_web::web::PayloadConfig;
@@ -17,6 +18,7 @@ async fn main() -> std::io::Result<()> {
             .service(healthcheck)
             .service(stream::route::upload)
             .service(ip::route::get_ip)
+            .service(file::route::get_files)
     })
         .bind(("0.0.0.0", 5000))?
         .run()
