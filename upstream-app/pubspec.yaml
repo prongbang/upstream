@@ -37,7 +37,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   file_picker: 8.1.3
   dio: 5.7.0
-  mobile_scanner: 6.0.2
+  qr_code_scanner: 1.0.1
+  get_ip_address: 0.0.7
+  get_it: 8.0.2
+  flutter_bloc: 8.1.6
+  get_storage: 2.1.1
+  percent_indicator: 4.2.3
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,5 @@
 [package]
-name = "upstream-server"
+name = "upstream"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,3 +11,4 @@ tokio = { version = "1", features=["macros", "rt-multi-thread", "fs"] }
 serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
 local-ip-address = "0.6.3"
+qr2term = "0.3.3"

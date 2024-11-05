@@ -1,8 +1,8 @@
+use crate::file::get_current_working_directory;
 use actix_web::{get, HttpResponse, Responder};
 use serde::Serialize;
-use std::{env, fs};
 use std::io;
-use crate::file::get_current_working_directory;
+use std::fs;
 
 #[derive(Serialize)]
 struct FileListResponse {
