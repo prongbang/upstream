@@ -15,3 +15,12 @@ brew update
 brew tap prongbang/homebrew-formulae
 brew install upstream
 ```
+
+## 🙏 Acknowledgments
+
+- Built with Rust 🦀
+- IDE Support by [RustRover](https://www.jetbrains.com/rust/)
+
+![RustRover](https://resources.jetbrains.com/help/img/idea/2024.3/RustRover_icon.svg)
+
+---

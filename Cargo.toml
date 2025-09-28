@@ -1,0 +1,23 @@
+[package]
+name = "upstream"
+version = "0.1.2"
+edition = "2021"
+
+[profile.release]
+# Enable Link-Time Optimization (LTO)
+lto = true
+# Enable Compiler Optimizations
+opt-level = 3
+codegen-units = 16
+
+[dependencies]
+actix-web = "4"
+actix-multipart = "0.7.2"
+futures-util = "0.3"
+serde = { version = "1.0.214", features = ["derive"] }
+local-ip-address = "0.6.3"
+qr2term = "0.3.3"
+actix-files = "0.6.6"
+mime = "0.3.17"
+chrono = "0.4.40"
+mime_guess = "2.0.5"

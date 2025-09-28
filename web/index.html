@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSTREAM</title>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="//unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-clifford: #da373d;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans leading-normal tracking-normal">
+<div class="container mx-auto p-6 max-w-3xl" x-data="uploadApp()">
+    <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">UPSTREAM</h2>
+
+    <!-- File Drop Zone -->
+    <div
+            class="border-2 border-dashed rounded-lg border-gray-300 p-8 mb-6 text-center hover:border-green-500 transition-colors duration-200 flex flex-col items-center justify-center"
+            :class="isDragging ? 'border-green-500 bg-green-50' : ''"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="isDragging = false"
+            @drop.prevent="handleDrop"
+    >
+        <div class="text-green-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+        </div>
+        <p class="text-gray-700 mb-2">Drag files to upload</p>
+        <p class="text-gray-500 text-sm mb-4">or</p>
+        <label class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors duration-200">
+            Choose File
+            <input type="file" x-ref="fileInput" @change="handleFileSelect" multiple class="hidden">
+        </label>
+    </div>
+
+    <!-- Files Queued for Upload -->
+    <div x-show="files.length > 0" class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-700">Files</h3>
+            <button
+                    @click="uploadFiles"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    :disabled="isUploading"
+                    :class="isUploading ? 'opacity-50 cursor-not-allowed' : ''"
+            >
+                Upload All
+            </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <template x-for="(file, index) in files" :key="index">
+                <div class="border-b border-gray-100 last:border-0">
+                    <div class="p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3 flex-1">
+                            <!-- File Type Icon -->
+                            <div class="flex-shrink-0">
+                                <template x-if="file.type.includes('image')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </template>
+                                <template x-if="!file.type.includes('image')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </template>
+                            </div>
+
+                            <!-- File Details -->
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate" x-text="file.name"></p>
+                                <p class="text-xs text-gray-500" x-text="formatFileSize(file.size)"></p>
+                            </div>
+
+                            <!-- Upload Status -->
+                            <div class="flex items-center space-x-4">
+                                <template x-if="file.progress === 100">
+                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Completed</span>
+                                </template>
+                                <template x-if="file.progress > 0 && file.progress < 100">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-gray-600" x-text="file.progress + '% done'"></span>
+                                        <span class="text-xs text-gray-600"
+                                              x-text="formatSpeed(file.speed) + '/sec'"></span>
+                                    </div>
+                                </template>
+
+                                <!-- Remove Button -->
+                                <button @click="removeFile(index)" class="text-gray-400 hover:text-red-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div x-show="file.progress > 0 && file.progress < 100" class="h-1 bg-gray-200">
+                        <div class="h-1 bg-blue-500 transition-all duration-300"
+                             :style="'width: ' + file.progress + '%'"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div
+            x-show="showNotification"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform translate-y-2"
+            class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>Files uploaded successfully!</span>
+    </div>
+</div>
+
+<script>
+    function uploadApp() {
+        return {
+            isDragging: false,
+            isUploading: false,
+            showNotification: false,
+            files: [],
+
+            // Handle drag and drop
+            handleDrop(e) {
+                this.isDragging = false;
+                const droppedFiles = e.dataTransfer.files;
+                this.addFiles(droppedFiles);
+            },
+
+            // Handle file input select
+            handleFileSelect() {
+                const selectedFiles = this.$refs.fileInput.files;
+                this.addFiles(selectedFiles);
+            },
+
+            // Add files to the queue
+            addFiles(fileList) {
+                const newFiles = Array.from(fileList).map(file => ({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    file: file,
+                    progress: 0,
+                    speed: 0,
+                    uploaded: false
+                }));
+
+                this.files = [...this.files, ...newFiles];
+            },
+
+            // Remove file from queue
+            removeFile(index) {
+                this.files.splice(index, 1);
+            },
+
+            // Format file size
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            },
+
+            // Format speed
+            formatSpeed(bytesPerSecond) {
+                return this.formatFileSize(bytesPerSecond);
+            },
+
+            // Upload files
+            uploadFiles() {
+                if (this.files.length === 0 || this.isUploading) return;
+
+                this.isUploading = true;
+
+                this.files.forEach((fileObj, index) => {
+                    if (fileObj.progress === 100) return;
+
+                    const formData = new FormData();
+                    formData.append('file', fileObj.file);
+
+                    const xhr = new XMLHttpRequest();
+                    let startTime = new Date().getTime();
+                    let loadedPrev = 0;
+
+                    // Progress event listener
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            // Calculate progress
+                            fileObj.progress = Math.round((event.loaded / event.total) * 100);
+
+                            // Calculate speed
+                            const currentTime = new Date().getTime();
+                            const elapsedTime = (currentTime - startTime) / 1000; // seconds
+                            if (elapsedTime > 0) {
+                                const loadedDelta = event.loaded - loadedPrev;
+                                fileObj.speed = Math.round(loadedDelta / elapsedTime);
+                                startTime = currentTime;
+                                loadedPrev = event.loaded;
+                            }
+                        }
+                    };
+
+                    // On upload complete
+                    xhr.onload = () => {
+                        if (xhr.status === 200) {
+                            fileObj.progress = 100;
+                            fileObj.uploaded = true;
+
+                            // Check if all files have been uploaded
+                            this.checkUploadCompletion();
+                        } else {
+                            console.error('Upload failed:', xhr.statusText);
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        console.error('An error occurred during the upload.');
+                    };
+
+                    xhr.open('POST', '/up', true);
+                    xhr.send(formData);
+                });
+            },
+
+            // Check if all files have been uploaded
+            checkUploadCompletion() {
+                if (this.files.every(file => file.progress === 100)) {
+                    this.isUploading = false;
+                    this.showNotification = true;
+
+                    // Hide notification after 3 seconds
+                    setTimeout(() => {
+                        this.showNotification = false;
+                    }, 3000);
+                }
+            }
+        };
+    }
+</script>
+</body>
+</html>
