@@ -16,7 +16,7 @@ struct UploadResponse {
 const INDEX_HTML: &str = include_str!("../.././web/index.html");
 
 #[get("/")]
-pub async fn index() -> impl Responder {
+pub async fn web_index() -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/html")
         .body(INDEX_HTML)

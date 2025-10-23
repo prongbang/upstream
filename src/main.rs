@@ -5,8 +5,7 @@ mod stream;
 
 use actix_files::Files;
 use actix_web::web::PayloadConfig;
-use actix_web::App;
-use actix_web::HttpServer;
+use actix_web::{App, HttpServer};
 use std::env;
 
 #[actix_web::main]
@@ -17,12 +16,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(PayloadConfig::default().limit(100 * 1024 * 1024 * 1024)) // 100 GB
             .service(healthcheck::route::healthcheck)
-            .service(stream::route::index)
+            .service(stream::route::web_index)
             .service(stream::route::upload)
             .service(ip::route::get_ip)
+            .service(file::route::web_files)
             .service(file::route::get_files)
             .service(Files::new("/shared", &pwd).show_files_listing())
-            .service(Files::new("/", "./web").index_file("index.html"))
     })
     .bind(("0.0.0.0", port.clone()))?
     .run();

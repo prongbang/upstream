@@ -31,6 +31,8 @@ pub fn get_file_details(file_path: &str) -> Result<FileDetails, Box<dyn std::err
     // Get the file path and metadata
     let path = Path::new(file_path);
     let metadata = metadata(path)?;
+    let cwd = get_current_working_directory()?;
+    let cwd_path = Path::new(&cwd);
 
     // Extract file details
     let file_name = path.file_name().unwrap_or_default().to_str().unwrap_or_default().to_string();
@@ -46,10 +48,17 @@ pub fn get_file_details(file_path: &str) -> Result<FileDetails, Box<dyn std::err
     let upload_date_str = upload_date.to_rfc3339();
 
     // Generate URL (this part can be customized based on your needs)
-    let url = format!("{}", file_path);
+    let relative_path = path.strip_prefix(cwd_path).unwrap_or(path);
+    let url = format!("/shared/{}", relative_path.to_string_lossy()).replace('\\', "/");
 
     // Return the FileDetails struct as a response
-    Ok(FileDetails::new(&file_name, file_size, &mime_type.to_string(), upload_date_str, &url))
+    Ok(FileDetails::new(
+        &file_name,
+        file_size,
+        &mime_type.to_string(),
+        upload_date_str,
+        &url,
+    ))
 }
 
 pub fn get_current_working_directory() -> io::Result<String> {

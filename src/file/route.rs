@@ -4,6 +4,9 @@ use serde::Serialize;
 use std::fs;
 use std::io;
 
+// Embed the HTML file at compile time
+const FILES_HTML: &str = include_str!("../.././web/files.html");
+
 #[derive(Serialize)]
 struct ResponseData<T> {
     code: String,
@@ -47,4 +50,11 @@ pub async fn get_files() -> impl Responder {
         }
         Err(e) => HttpResponse::InternalServerError().body(format!("Error: {:?}", e)),
     }
+}
+
+#[get("/files")]
+pub async fn web_files() -> impl Responder {
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(FILES_HTML)
 }
