@@ -5,6 +5,7 @@ Upstream: A Tool for Sending Files from Client to Server on Local only.
 ## Using
 
 ![img.png](img.png)
+![preview.png](preview.png)
 
 ## Install
 
