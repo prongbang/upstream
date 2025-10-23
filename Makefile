@@ -22,4 +22,4 @@ zip_macos_arm64:
 
 # make build_macos version=0.1.2
 build_macos_release:
-	make build_macos version=0.1.2
+	make build_macos version=0.1.3
